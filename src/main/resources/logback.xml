@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="false">
+    <property name="stdout-pattern" value="[%p] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t][%c]%C:%L - %m %n"/>
+    <!-- 文件历史数 -->
+    <property name="max-history" value="30"/>
+    <property name="encoding" value="UTF-8"/>
+
+
+    <!-- 按照每天生成日志文件 -->
+    <appender name="file1" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/web/logs/file.log</file>
+
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!-- rollover daily -->
+            <fileNamePattern>/web/logs/file.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!-- or whenever the file size reaches 20MB -->
+                <maxFileSize>1MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <!-- keep 30 days' worth of history -->
+            <MaxHistory>30</MaxHistory>
+        </rollingPolicy>
+
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <!--格式化输出：%d表示日期，%thread表示线程名，%-5level：级别从左显示5个字符宽度%msg：日志消息，%n是换行符-->
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- Perf4J appenders -->
+
+    <!-- This file appender is used to output aggregated performance statistics -->
+    <appender name="perf4jFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/web/logs/perf4j.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <FileNamePattern>/web/logs/perf4j.%d{yyyy-MM-dd}.log</FileNamePattern>
+        </rollingPolicy>
+
+        <encoder>
+            <pattern>${stdout-pattern}</pattern>
+            <charset>${encoding}</charset>
+        </encoder>
+    </appender>
+
+    <!-- Loggers -->
+    <!--
+      The Perf4J logger. Note that org.perf4j.TimingLogger is the value of the
+      org.perf4j.StopWatch.DEFAULT_LOGGER_NAME constant. Also, note that
+      additivity is set to false, which is usually what is desired - this means
+      that timing statements will only be sent to this logger and NOT to
+      upstream loggers.
+    -->
+    <logger name="org.perf4j.TimingLogger" additivity="false">
+        <level value="DEBUG"/>
+        <appender-ref ref="perf4jFileAppender"/>
+    </logger>
+
+    <root level="DEBUG">
+        <appender-ref ref="file1"/>
+    </root>
+</configuration>
